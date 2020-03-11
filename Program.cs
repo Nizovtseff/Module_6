@@ -82,24 +82,8 @@ namespace Module_6
             var rowsContain = (from rows in stringArrayS
                                where rows.Contains(enteredSubstring)
                                select rows).Count();
-            string output = String.Join(", ", rowsContain);
-            Console.WriteLine(output);
-
             Console.WriteLine(rowsContain != 0);
-
-            Console.WriteLine(stringArrayS.All(l => l.Length > 3));
-            Console.WriteLine(stringArrayS.AllMy(l => l.Length > 3));
         }
-        public static bool AllMy<TSource>(this IEnumerable<TSource> source, Func<TSource, bool> predicate)
-        {
-            foreach (var item in source)
-            {
-                if (!predicate(item))
-                    return false;
-            }
-            return true;
-        }
-
         static void EnterSomeSubstring()// Ввод подстроки юзером
         {
             string enteredSubstring;
@@ -120,12 +104,170 @@ namespace Module_6
             string output = String.Join(", ", longestString);
             Console.WriteLine(output);
         }
-
-        public static string AddSS(this string[] s) // Просто тест
+        static void MyTest() //Для тестирования новых методов
         {
-            return s + "1";
-        }
+            string[] stringArrayT = { "Kyiv", "Kharkiv", "Odessa", "Dnipro", "Zaporizhia", "Mykolaiv", "Mykolaiv" };
+            //string[] stringArrayT = null;
 
+            var ddd = stringArrayT.WhereMy(l => l.StartsWith("K"));
+            foreach (var d in ddd)
+                Console.WriteLine(d);
+        }
+        public static bool AllMy<TSource>(this IEnumerable<TSource> source, Func<TSource, bool> predicate)
+        {
+            foreach (var item in source)
+            {
+                if (!predicate(item))
+                    return false;
+            }
+            return true;
+        }
+        public static bool AnyMy<TSource>(this IEnumerable<TSource> source, Func<TSource, bool> predicate)
+        {
+            foreach (var item in source)
+            {
+                if (predicate(item))
+                    return true;
+                if (predicate(item) == true)
+                    break;
+            }
+            return false;
+        }
+        public static int CountMy<TSource>(this IEnumerable<TSource> source, Func<TSource, bool> predicate)
+        {
+            int count = 0;
+            foreach (var item in source)
+            {
+                if (predicate(item))
+                    count++;
+            }
+            return count;
+        }
+        public static TSource FirstMy<TSource>(this IEnumerable<TSource> source, Func<TSource, bool> predicate)
+        {
+            TSource obj = default;
+            foreach (var item in source)
+            {
+                if (predicate(item))
+                {
+                    obj = item;
+                    break;
+                }
+            }
+            if (obj == default)
+                Console.WriteLine("The searching row is missing");
+            return obj;
+        }
+        public static TSource FirstOrDefaultMy<TSource>(this IEnumerable<TSource> source, Func<TSource, bool> predicate)
+        {
+            TSource obj = default;
+            if (source != null)
+            {
+                foreach (var item in source)
+                {
+                    if (predicate(item))
+                    {
+                        obj = item;
+                        break;
+                    }
+                }
+            }
+            return obj;
+        }
+        public static TSource SingleMy<TSource>(this IEnumerable<TSource> source, Func<TSource, bool> predicate)
+        {
+            TSource obj = default;
+            int count = 0;
+            try
+            {
+                if (source != null)
+                {
+                    foreach (var item in source)
+                    {
+                        if (predicate(item))
+                        {
+                            obj = item;
+                            count++;
+                        }
+                    }
+                    if (count > 1)
+                    {
+                        throw new Exception("Entered row isn't single");
+                    }
+                }
+                if (obj == default)
+                    Console.WriteLine("DEFAULT");
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine(ex.Message);
+            }
+            return obj;
+        }
+        public static TSource SingleOrDefaultMy<TSource>(this IEnumerable<TSource> source, Func<TSource, bool> predicate)
+        {
+            TSource obj = default;
+            int count = 0;
+
+            if (source != null)
+            {
+                foreach (var item in source)
+                {
+                    if (predicate(item))
+                    {
+                        obj = item;
+                        count++;
+                    }
+                }
+                if (count > 1)
+                {
+                    obj = default;
+                }
+            }
+            return obj;
+        }
+        public static TSource LastMy<TSource>(this IEnumerable<TSource> source, Func<TSource, bool> predicate)
+        {
+            TSource obj = default;
+            foreach (var item in source)
+            {
+                if (predicate(item))
+                {
+                    obj = item;
+                }
+            }
+            if (obj == default)
+                Console.WriteLine("The searching row is missing");
+            return obj;
+        }
+        public static TSource LastOrDefaultMy<TSource>(this IEnumerable<TSource> source, Func<TSource, bool> predicate)
+        {
+            TSource obj = default;
+            foreach (var item in source)
+            {
+                if (predicate(item))
+                {
+                    obj = item;
+                }
+            }
+            if (obj == default)
+                Console.WriteLine("DEFAULT");
+            return obj;
+        }
+        public static IEnumerable<TSource> WhereMy<TSource>(this IEnumerable<TSource> source, Func<TSource, bool> predicate)
+        {
+            var List = new List<TSource>();
+
+            if (source != null)
+            {
+                foreach (var item in source)
+                {
+                    if (predicate(item))
+                        List.Add(item);
+                }
+            }
+            return List;
+        }
         static void Main(string[] args)
         {
             bool exit = false;
@@ -138,6 +280,7 @@ namespace Module_6
                 Console.WriteLine(" 4 - To display a cities with 'A' letter");
                 Console.WriteLine(" 5 - To display if a row contains entered substring");
                 Console.WriteLine(" 6 - To display a longest row");
+                Console.WriteLine(" 9 - To run MyTest");
                 Console.WriteLine(" 0 - Quit");
                 Console.WriteLine(" -------------------------------------------------------------------------");
 
@@ -161,6 +304,9 @@ namespace Module_6
                         break;
                     case "6":
                         DisplayLongestRow();
+                        break;
+                    case "9":
+                        MyTest();
                         break;
                     case "0":
                         exit = true;
