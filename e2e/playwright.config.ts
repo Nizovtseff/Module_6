@@ -3,6 +3,13 @@ import path from 'path';
 
 export const STORAGE_STATE = path.join(__dirname, 'playwright/.auth/user.json');
 
+export const PORTALS = {
+  US:    process.env.US_PORTAL    ?? 'https://vctrials.com',
+  EU:    process.env.EU_PORTAL    ?? 'https://vctrials.eu/',
+  ASIA:  process.env.ASIA_PORTAL  ?? 'https://vctrials.asia/',
+  LATAM: process.env.LATAM_PORTAL ?? 'https://vctrialssamerica.com/',
+} as const;
+
 export default defineConfig({
   testDir: './tests',
   fullyParallel: false,
@@ -11,7 +18,7 @@ export default defineConfig({
   workers: 1,
   reporter: [['html', { open: 'never' }], ['list']],
   use: {
-    baseURL: 'https://qa-us-admin.vct2.work',
+    baseURL: process.env.BASE_URL ?? 'https://qa-us-admin.vct2.work',
     trace: 'on-first-retry',
     screenshot: 'only-on-failure',
     video: 'on-first-retry',
