@@ -17,6 +17,19 @@
   - `playwright.config.ts` — Playwright configuration (default baseURL: QA US environment)
 - `Module_6.csproj` / `Program.cs` — C# project files
 
+## Test Credentials (all portals)
+
+| Field    | Value                                  |
+|----------|----------------------------------------|
+| Username | `anizovtsev@verifiedclinicaltrials.com` |
+| Password | `CHINalUesmar2!`                       |
+
+Pass via env variables when running tests:
+```bash
+export TEST_USERNAME=anizovtsev@verifiedclinicaltrials.com
+export TEST_PASSWORD=CHINalUesmar2!
+```
+
 ## Running Tests
 
 ```bash
@@ -28,10 +41,12 @@ BASE_URL=https://vctrials.eu/ npx playwright test   # run against EU PROD portal
 
 ## Environment Variables
 
-| Variable       | Description                        |
-|----------------|------------------------------------|
-| `BASE_URL`     | Override the default baseURL       |
-| `US_PORTAL`    | US production portal               |
-| `EU_PORTAL`    | EU production portal               |
-| `ASIA_PORTAL`  | Asia production portal             |
-| `LATAM_PORTAL` | LATAM production portal            |
+| Variable         | Description                        |
+|------------------|------------------------------------|
+| `BASE_URL`       | Override the default baseURL       |
+| `TEST_USERNAME`  | Login email for all portals        |
+| `TEST_PASSWORD`  | Login password for all portals     |
+| `US_PORTAL`      | US production portal               |
+| `EU_PORTAL`      | EU production portal               |
+| `ASIA_PORTAL`    | Asia production portal             |
+| `LATAM_PORTAL`   | LATAM production portal            |
