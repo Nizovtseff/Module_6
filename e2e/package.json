@@ -10,7 +10,9 @@
     "test:report": "playwright show-report",
     "test:setup": "playwright test --project=setup",
     "test:list": "playwright test tests/protocol-sync/protocolSyncList.spec.ts",
-    "test:edit": "playwright test tests/protocol-sync/protocolSyncEdit.spec.ts"
+    "test:edit": "playwright test tests/protocol-sync/protocolSyncEdit.spec.ts",
+    "test:legacy-setup": "playwright test --project=legacy-admin-setup",
+    "test:sponsor-report": "playwright test tests/sponsor-alert-report/sponsorAlertReport.spec.ts"
   },
   "keywords": [],
   "author": "",
