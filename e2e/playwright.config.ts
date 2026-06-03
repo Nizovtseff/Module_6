@@ -60,5 +60,18 @@ export default defineConfig({
       dependencies: ['legacy-admin-setup'],
       testMatch: /sponsor-alert-report/,
     },
+
+    // ── Global API (Swagger UI) ──────────────────────────────────────────
+    {
+      name: 'global-api',
+      use: {
+        ...devices['Desktop Chrome'],
+        baseURL: 'https://api-v2.vct2.work',
+        actionTimeout: 20000,
+        navigationTimeout: 45000,
+        ignoreHTTPSErrors: true,
+      },
+      testMatch: /global-api/,
+    },
   ],
 });
