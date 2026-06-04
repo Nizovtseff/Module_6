@@ -10,14 +10,18 @@
     "test:report": "playwright show-report",
     "test:setup": "playwright test --project=setup",
     "test:list": "playwright test tests/protocol-sync/protocolSyncList.spec.ts",
-    "test:edit": "playwright test tests/protocol-sync/protocolSyncEdit.spec.ts"
+    "test:edit": "playwright test tests/protocol-sync/protocolSyncEdit.spec.ts",
+    "test:legacy-setup": "playwright test --project=legacy-admin-setup",
+    "test:sponsor-report": "playwright test tests/sponsor-alert-report/sponsorAlertReport.spec.ts",
+    "test:global-api": "playwright test tests/global-api/globalApi.spec.ts --project=global-api"
   },
   "keywords": [],
   "author": "",
   "license": "ISC",
   "devDependencies": {
-    "@playwright/test": "^1.60.0",
+    "@playwright/test": "^1.49.0",
     "@types/node": "^25.9.1",
+    "dotenv": "^17.4.2",
     "typescript": "^6.0.3"
   }
 }
