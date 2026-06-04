@@ -1,5 +1,6 @@
 import { defineConfig, devices } from '@playwright/test';
 import path from 'path';
+import 'dotenv/config';
 
 export const STORAGE_STATE = path.join(__dirname, 'playwright/.auth/user.json');
 export const LEGACY_STORAGE_STATE = path.join(__dirname, 'playwright/.auth/legacy-admin.json');
