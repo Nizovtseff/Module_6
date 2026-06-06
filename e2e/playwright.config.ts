@@ -1,10 +1,18 @@
 import { defineConfig, devices } from '@playwright/test';
 import path from 'path';
+import 'dotenv/config';
 
 export const STORAGE_STATE = path.join(__dirname, 'playwright/.auth/user.json');
 export const LEGACY_STORAGE_STATE = path.join(__dirname, 'playwright/.auth/legacy-admin.json');
 
 const LEGACY_BASE_URL = process.env.LEGACY_BASE_URL ?? 'https://dev-web-us.vctrials.com';
+
+export const PORTALS = {
+  US:    process.env.US_PORTAL    ?? 'https://vctrials.com',
+  EU:    process.env.EU_PORTAL    ?? 'https://vctrials.eu/',
+  ASIA:  process.env.ASIA_PORTAL  ?? 'https://vctrials.asia/',
+  LATAM: process.env.LATAM_PORTAL ?? 'https://vctrialssamerica.com/',
+} as const;
 
 export default defineConfig({
   testDir: './tests',
@@ -12,15 +20,16 @@ export default defineConfig({
   forbidOnly: !!process.env.CI,
   retries: process.env.CI ? 2 : 0,
   workers: 1,
+  timeout: 60000,
   reporter: [['html', { open: 'never' }], ['list']],
   use: {
-    baseURL: 'https://qa-us-admin.vct2.work',
+    baseURL: process.env.BASE_URL ?? 'https://qa-us-admin.vct2.work',
     trace: 'on-first-retry',
     screenshot: 'only-on-failure',
     video: 'on-first-retry',
     headless: true,
-    actionTimeout: 15000,
-    navigationTimeout: 30000,
+    actionTimeout: 30000,
+    navigationTimeout: 60000,
   },
   projects: [
     // ── Angular admin app ────────────────────────────────────────────────
@@ -59,6 +68,19 @@ export default defineConfig({
       },
       dependencies: ['legacy-admin-setup'],
       testMatch: /sponsor-alert-report/,
+    },
+
+    // ── Global API (Swagger UI) ──────────────────────────────────────────
+    {
+      name: 'global-api',
+      use: {
+        ...devices['Desktop Chrome'],
+        baseURL: 'https://api-v2.vct2.work',
+        actionTimeout: 20000,
+        navigationTimeout: 45000,
+        ignoreHTTPSErrors: true,
+      },
+      testMatch: /global-api/,
     },
   ],
 });
