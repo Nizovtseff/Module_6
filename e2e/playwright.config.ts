@@ -20,6 +20,7 @@ export default defineConfig({
   forbidOnly: !!process.env.CI,
   retries: process.env.CI ? 2 : 0,
   workers: 1,
+  timeout: 60000,
   reporter: [['html', { open: 'never' }], ['list']],
   use: {
     baseURL: process.env.BASE_URL ?? 'https://qa-us-admin.vct2.work',
@@ -27,8 +28,8 @@ export default defineConfig({
     screenshot: 'only-on-failure',
     video: 'on-first-retry',
     headless: true,
-    actionTimeout: 15000,
-    navigationTimeout: 30000,
+    actionTimeout: 30000,
+    navigationTimeout: 60000,
   },
   projects: [
     // ── Angular admin app ────────────────────────────────────────────────

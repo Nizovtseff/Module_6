@@ -1,7 +1,8 @@
 import { Page, Locator } from '@playwright/test';
+import { VctLoginPage } from './VctLoginPage';
 
 export class HealthTestPage {
-  readonly url = '/admin/healthtest.aspx';
+  readonly url = '/control/admin/healthtest.aspx';
 
   readonly emailTestButton: Locator;
   readonly emailTestResult: Locator;
@@ -32,6 +33,15 @@ export class HealthTestPage {
   async goto(): Promise<void> {
     await this.page.goto(this.url);
     await this.page.waitForLoadState('networkidle');
+
+    // Session may have expired — server silently redirects to login page
+    if (this.page.url().includes('index.aspx')) {
+      const username = process.env.VCT_USERNAME ?? process.env.TEST_USERNAME ?? '';
+      const password = process.env.VCT_PASSWORD ?? process.env.TEST_PASSWORD ?? '';
+      await new VctLoginPage(this.page).login(username, password);
+      await this.page.goto(this.url);
+      await this.page.waitForLoadState('networkidle');
+    }
   }
 
   async clickAndWait(button: Locator): Promise<void> {
