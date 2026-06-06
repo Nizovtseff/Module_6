@@ -343,3 +343,5 @@ healthchecksdb
 e2e/.env
 .env
 *.env
+# Local extraction of VCT.Analysis.zip (zip is the source of truth in the repo)
+VCT.Analysis/
