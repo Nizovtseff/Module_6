@@ -26,6 +26,122 @@ Core purpose: **subject verification** — ensuring the same person is not simul
 
 Test credentials: `anizovtsev@verifiedclinicaltrials.com` / `CHINalUesmar2!`
 
+### Deployment inventory
+
+User-provided environment inventory (2026-10-14). Blank database names were not supplied.
+
+| App | Region | App Service | Slot | Database | URL |
+|-----|--------|-------------|------|----------|-----|
+| PORTAL | ASIA | VCT4PRDWEB01 | vct4prdweb01 (MAIN) | | https://vct4prdweb01.azurewebsites.net |
+| API | ASIA | VCT4PRDAPI01 | vct4prdapi01 (MAIN) | | https://vct4prdapi01.azurewebsites.net |
+| V2 | ASIA | VCT4PRDWEB01 | vct4prdweb01 (MAIN) | | https://vct4prdweb01.azurewebsites.net/v2 |
+| PORTAL | EU | VCT2PRDWEB01 | vct2prdweb01 (MAIN) | | https://vct2prdweb01.azurewebsites.net |
+| API | EU | VCT2PRDAPI01 | vct2prdapi01 (MAIN) | | https://vct2prdapi01.azurewebsites.net |
+| V2 | EU | VCT2PRDWEB01 | vct2prdweb01 (MAIN) | | https://vct2prdweb01.azurewebsites.net/v2 |
+| PORTAL | US | VCT1PRDWEB01 | vct1prdweb01 (MAIN) | VCT1PRDDB | https://vctrials.com |
+| API | US | VCT1PRDAPI01 | vct1prdapi01 (MAIN) | VCT1PRDDB | https://api.vctrials.com |
+| V2 | US | VCT1PRDWEB01 | vct1prdweb01 (MAIN) | VCT1PRDDB | https://vctrials.com//v2 |
+| PORTAL | LATAM | VCT1SAPRDWEB01 | vct1saprdweb01 (MAIN) | VCT1SAPRDDB | https://vctrialssamerica.com/ |
+| API | LATAM | VCT1SAPRDAPI01 | vct1saprdapi01 (MAIN) | VCT1SAPRDDB | https://api.vctrialssamerica.com |
+| V2 | LATAM | VCT1SAPRDWEB01 | vct1saprdweb01 (MAIN) | VCT1SAPRDDB | https://vctrialssamerica.com//v2 |
+| TASK SCHEDULER | LATAM | VCT1SAPRDWEB01 | vct1saprdweb01-task-scheduler | VCT1SAPRDDB | https://vct1saprdweb01-task-scheduler.azurewebsites.net |
+
+| US legacy UI environment | URL |
+|--------------------------|-----|
+| DEV | https://dev-web-us.vctrials.com/ |
+| QA | https://qa-web-us.vctrials.com/ |
+| UAT | https://uat-web-us.vctrials.com/ |
+
+Site verification uses the legacy QA UI, **Research Site** login, and site **Adams Clinical**.
+The existing Playwright default (`qa-us-admin.vct2.work`) is a different, admin application.
+
+### Site verification happy path
+
+From `e2e`, run `npm run test:verification:happy` with `TEST_USERNAME` and
+`TEST_PASSWORD` set. The isolated `site-qa-chromium` project logs in as a research
+site user, selects Adams Clinical, and submits a subject under AutoTest RA 2 at
+08053, TEST Location 3 (NOT A DOSING/COHORT STUDY).
+
+Each run creates a new synthetic subject on QA US.
+Subject Number uses `Auto-DDMMYY-HHMMSS` (18 characters), with local date/time
+on the test runner, e.g. `Auto-141026-103521`. The `Auto-` prefix identifies
+automated verifications; manual testing uses `Admin-DDMM-HHMM`.
+The timestamp has second precision and is not a uniqueness guarantee across
+parallel runs.
+
+Automatic retries are disabled
+to avoid duplicate submissions. The test asserts the subject-specific
+"Successfully Verified" message, certificate link, and New Verification link.
+Unexpected dialogs fail this happy path; conditional popup scenarios are not
+covered here. Input JSON, result JSON, and a result screenshot are attached to
+the Playwright report under ignored test outputs. Stored-record comparison is
+a separate, not-yet-implemented scenario.
+
+### Admin protocol navigation
+
+From `e2e`, run `npm run test:protocol:open`. Credentials are
+`LEGACY_ADMIN_USERNAME` / `LEGACY_ADMIN_PASSWORD`, falling back to
+`TEST_USERNAME` / `TEST_PASSWORD`.
+
+The `admin-protocol-qa-chromium` project logs into QA US as VCT Staff, searches
+Manage Protocols for AutoTest RA 2 under Test Sponsor, and opens Edit Rolling
+Admission Protocol. It checks the protocol name, number, and sponsor and
+attaches the opened protocol details and screenshot to the report. It does not
+modify or save protocol settings.
+
+Reuse `VctLoginPage.login()` and `AdminProtocolPage.open('AutoTest RA 2',
+'Test Sponsor')` when adding protocol settings checks or explicitly requested
+settings changes. Navigation resolves the current link from the search results
+rather than hardcoding the encrypted protocol URL.
+
+### Protocol editing approval and inspected baseline
+
+User requirement: before editing a protocol, explain each current value -> new
+value and its intended effect. Require explicit confirmation via `ask_user`
+before saving or performing potentially persistent Add/Remove operations,
+including changes made through APIs or automated tests. Approval applies only
+to the described changes; changed values or scope require renewed confirmation.
+Read-only inspection is allowed.
+
+Read-only inspection of QA US / AutoTest RA 2 / Test Sponsor on 2026-10-14:
+
+| Setting | Observed value |
+|---------|----------------|
+| Type | Rolling Admission |
+| Age range | 1-99 |
+| Minor-only / biometric / dosing cohort | No / No / No |
+| Lockout from prior trial | 1 day, Last Blood Draw Date -> Check-in / Admission Date |
+| Maximum screening window | 3 days |
+| Phase / CRO / Pharma / IRT | Phase I / Test CRO / Test Pharma / Test IRT |
+| Compounds | TestCompound 2: no exclusions, Radioactive isotope, half-life 2 hours; TestCompound: 12 months washout, Radioactive isotope, half-life 1 hour |
+| Health condition | Test- (/Condition\\):;@#$%^&*?,. (Transient), N/A cohort |
+| Prohibited health conditions | None listed |
+| Study visits | 5; screening V1, admission V2, first dosing V3, last dosing V4, last blood draw and completion V5 |
+| Visit day offsets / margins | -10, -5, 0, 5, 10 / all 0 |
+| Verification Plus / consent | Verification Plus without Driver License / No Multi-Year Consent |
+| Subject Number mandatory / format / regex | No / empty / unchecked |
+| Sites | Adams Clinical: 08053, TEST Location 3, site #3; Denys: Correct Location, site #266 |
+
+The page also exposes custom washout/compound exceptions, qualification/run-in,
+status automation, dual-screening and re-screening flags, study-type flags,
+notification/consent/identity options, site staff/training, and an audit change log.
+All visible protocol option checkboxes were unchecked at inspection.
+Blank fields in Add forms are not evidence of an existing rule; inspect the
+associated rule list. Re-read live values before proposing edits: this baseline
+is a dated observation, not a required test assertion. No protocol changes were made.
+
+### Verification certificate expectations
+
+User-confirmed on 2026-10-14: ID and location are not printed in verification
+certificates; this is expected. AutoTest RA 2 has dosing cohorts disabled
+(`NOT A DOSING/COHORT STUDY`), so no cohort is expected in this scenario.
+Certificate timestamps in GMT-5 are acceptable even when the Subject Number
+template uses the runner's local timezone.
+
+The age-failure certificate from the normal Verify Subject flow incorrectly
+says "Details related to this prescreen". The user confirmed this wording is a
+bug and has reported it to developers; no issue was filed by this session.
+
 ---
 
 ## Migration Goal

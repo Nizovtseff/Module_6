@@ -1,5 +1,16 @@
 # Module 6 — VCTrials E2E Test Project
 
+## Protocol editing approval
+
+Before editing a protocol, describe the target environment, protocol, and every
+proposed field change as current value -> new value, including the intended effect.
+Before saving, require explicit user confirmation of the exact changes via
+`ask_user`. Do not click Save or persist protocol changes through UI, API, or
+automated tests without that confirmation. If the proposed changes or current
+values change, request confirmation again. Treat Add/Remove actions as potentially
+persistent; do not use them as a workaround for the approval requirement.
+Read-only navigation and inspection do not require confirmation.
+
 ## Production Portals
 
 | Region | ENV Variable | URL |
