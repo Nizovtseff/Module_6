@@ -1,5 +1,13 @@
 import { Page, expect } from '@playwright/test';
 
+declare const Sys: {
+  WebForms: {
+    PageRequestManager: {
+      getInstance(): { get_isInAsyncPostBack(): boolean };
+    };
+  };
+};
+
 export interface VerificationInput {
   site: string;
   protocol: string;
@@ -14,6 +22,7 @@ export interface VerificationInput {
   idLastFive: string;
   idType: string;
   termsAccepted: boolean;
+  biometricNotUsedReason?: string;
 }
 
 export class SiteVerificationPage {
@@ -29,8 +38,14 @@ export class SiteVerificationPage {
   }
 
   async fill(input: VerificationInput): Promise<void> {
-    await this.field('ddlProtocols').selectOption({ label: input.protocol });
-    await this.field('ddlLocations').selectOption({ label: input.location });
+    await this.selectWithPostback('#ctl00_ContentPlaceHolder1_ddlProtocols', input.protocol);
+    await expect(this.field('ddlLocations').locator('option')).toContainText([input.location]);
+    if (input.biometricNotUsedReason) {
+      await this.selectWithPostback('#ddBiometricNotUsedReason', input.biometricNotUsedReason);
+      await expect(this.page.locator('#ddBiometricNotUsedReason option:checked'))
+        .toHaveText(input.biometricNotUsedReason);
+    }
+    await this.selectWithPostback('#ctl00_ContentPlaceHolder1_ddlLocations', input.location);
     await this.field('ddlCohorts').selectOption({ label: input.cohort });
 
     const textFields = {
@@ -57,10 +72,28 @@ export class SiteVerificationPage {
       await expect(this.field(name)).toHaveValue(value);
     }
     await this.field('chkTerms').setChecked(input.termsAccepted);
+    for (const [name, value] of Object.entries(textFields)) {
+      await expect(this.field(name)).toHaveValue(value);
+    }
     await expect(this.field('chkTerms')).toBeChecked();
     await expect(this.field('ddlProtocols').locator('option:checked')).toHaveText(input.protocol);
     await expect(this.field('ddlLocations').locator('option:checked')).toHaveText(input.location);
     await expect(this.field('ddlCohorts').locator('option:checked')).toHaveText(input.cohort);
+  }
+
+  private async selectWithPostback(selector: string, label: string): Promise<void> {
+    const url = new URL(this.page.url());
+    url.hash = '';
+    const [response] = await Promise.all([
+      this.page.waitForResponse(result =>
+        result.url() === url.href && result.request().method() === 'POST'),
+      this.page.locator(selector).selectOption({ label }),
+    ]);
+    expect(response.ok(), `Postback failed for ${selector}`).toBeTruthy();
+    await response.finished();
+    await this.page.waitForFunction(() =>
+      !Sys.WebForms.PageRequestManager.getInstance().get_isInAsyncPostBack());
+    await this.page.waitForLoadState('networkidle');
   }
 
   async submitAndExpectSuccess(input: VerificationInput): Promise<void> {
@@ -73,5 +106,20 @@ export class SiteVerificationPage {
       name: 'Download Subject Verification Certificate', exact: true,
     })).toBeVisible();
     await expect(this.page.getByRole('link', { name: 'New Verification', exact: true })).toBeVisible();
+  }
+
+  async rejectExclusionAlert(reason: string, eligibleDate: RegExp): Promise<string> {
+    const alert = this.page.locator('#colorbox');
+    await expect(alert).toBeVisible({ timeout: 45000 });
+    await expect(alert).toContainText(reason);
+    await expect(alert).toContainText(eligibleDate);
+    const failure = alert.locator('input[type="radio"][value="2"]');
+    await expect(failure, 'Expected one isolated exclusion alert').toHaveCount(1);
+    await expect(alert.locator('input[type="radio"][value="1"]')).not.toBeChecked();
+    const text = await alert.innerText();
+    await failure.check();
+    await alert.getByRole('button', { name: 'Proceed', exact: true }).click();
+    await expect(alert).not.toBeVisible();
+    return text;
   }
 }

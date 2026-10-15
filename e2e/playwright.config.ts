@@ -44,7 +44,7 @@ export default defineConfig({
         storageState: STORAGE_STATE,
       },
       dependencies: ['setup'],
-      testIgnore: /sponsor-alert-report|site-verification|admin-protocol/,
+      testIgnore: /sponsor-alert-report|site-verification|admin-protocol|compound-exception|study-exclusions/,
     },
 
     // ── Legacy ASP.NET admin app ─────────────────────────────────────────
@@ -85,6 +85,28 @@ export default defineConfig({
     {
       name: 'site-qa-chromium',
       testMatch: /site-verification/,
+      retries: 0,
+      use: {
+        ...devices['Desktop Chrome'],
+        baseURL: 'https://qa-web-us.vctrials.com',
+        storageState: { cookies: [], origins: [] },
+        trace: 'retain-on-failure',
+      },
+    },
+    {
+      name: 'compound-exception-qa-chromium',
+      testMatch: /compound-exception/,
+      retries: 0,
+      use: {
+        ...devices['Desktop Chrome'],
+        baseURL: 'https://qa-web-us.vctrials.com',
+        storageState: { cookies: [], origins: [] },
+        trace: 'retain-on-failure',
+      },
+    },
+    {
+      name: 'study-exclusions-qa-chromium',
+      testMatch: /study-exclusions/,
       retries: 0,
       use: {
         ...devices['Desktop Chrome'],
