@@ -40,8 +40,15 @@ export class LoginPage {
       // Prompt didn't appear — that's fine
     }
 
-    // Wait until redirected back to the application
-    await this.page.waitForURL(/qa-us-admin\.vct2\.work/, { timeout: 30000 });
-    await expect(this.page).toHaveURL(/qa-us-admin\.vct2\.work/);
+    // Wait until redirected back to the application (any VCT domain)
+    await this.page.waitForURL(
+      (url) =>
+        url.hostname.includes('vct2.work') ||
+        url.hostname.includes('vctrials.com') ||
+        url.hostname.includes('vctrials.eu') ||
+        url.hostname.includes('vctrials.asia') ||
+        url.hostname.includes('vctrialssamerica.com'),
+      { timeout: 30000 }
+    );
   }
 }
